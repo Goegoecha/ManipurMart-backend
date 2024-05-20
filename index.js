@@ -9,12 +9,7 @@ const path = require("path");
 const cors = require("cors");
 
 app.use(express.json());
-
-const corsOptions = {
-  origin: 'https://manipurmart.netlify.app',
-  optionSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Database Connection With MongoDB
 
@@ -40,7 +35,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 // Creating Upload Endpoint for Storage
-app.use('/images', express.static('upload/images'))
+app.use('/images', express.static(path.join(__dirname, 'upload/images')));
 
 app.post("/upload", upload.single('product'), (req, res) => {
   res.json({
