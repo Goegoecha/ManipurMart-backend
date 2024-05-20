@@ -1,4 +1,5 @@
-const port = 4000;
+require('dotenv').config();
+const port = process.env.PORT || 4000;
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -6,15 +7,15 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
-const { type } = require("os");
-const { log } = require("console");
 
 app.use(express.json());
 app.use(cors());
 
 // Database Connection With MongoDB
 
-mongoose.connect("mongodb+srv://goechaksh:kshetrimayum1.@cluster0.sn5rij4.mongodb.net/ManipurMart");
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((error) => console.error('Could not connect to MongoDB', error));
 
 // API Creation
 
@@ -29,7 +30,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
   }
-})
+});
 
 const upload = multer({ storage: storage })
 
@@ -41,8 +42,8 @@ app.post("/upload", upload.single('product'), (req, res) => {
     success: 1,
     // image_url: `http://localhost:${port}/images/${req.file.filename}`,
     image_url: `https://manipurmart-backend.onrender.com/images/${req.file.filename}`,
-  })
-})
+  });
+});
 
 // Schema for Creating Products
 
@@ -177,7 +178,7 @@ app.post('/signup', async (req, res) => {
     }
   }
 
-  const token = jwt.sign(data, 'secret_ecom');
+  const token = jwt.sign(data, process.env.JWT_SECRET);
   res.json({ success: true, token })
 })
 
@@ -193,7 +194,7 @@ app.post('/login', async (req, res) => {
           id: user.id
         }
       }
-      const token = jwt.sign(data, 'secret_ecom');
+      const token = jwt.sign(data, process.env.JWT_SECRET);
       res.json({ success: true, token });
     }
     else {
