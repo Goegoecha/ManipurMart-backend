@@ -9,7 +9,12 @@ const path = require("path");
 const cors = require("cors");
 
 app.use(express.json());
-app.use(cors());
+
+const corsOptions = {
+  origin: 'https://manipurmart.netlify.app',
+  optionSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 // Database Connection With MongoDB
 
