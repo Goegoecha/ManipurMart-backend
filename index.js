@@ -7,6 +7,13 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 app.use(express.json());
 app.use(cors());
@@ -35,14 +42,30 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 // Creating Upload Endpoint for Storage
-app.use('/images', express.static(path.join(__dirname, 'upload/images')));
+// app.use('/images', express.static(path.join(__dirname, 'upload/images')));
+
+// app.post("/upload", upload.single('product'), (req, res) => {
+//   res.json({
+//     success: 1,
+//     // image_url: `http://localhost:${port}/images/${req.file.filename}`,
+//     image_url: `https://manipurmart-backend.onrender.com/images/${req.file.filename}`,
+//   });
+// });
 
 app.post("/upload", upload.single('product'), (req, res) => {
-  res.json({
-    success: 1,
-    // image_url: `http://localhost:${port}/images/${req.file.filename}`,
-    image_url: `https://manipurmart-backend.onrender.com/images/${req.file.filename}`,
-  });
+  const path = req.file.path;
+
+  cloudinary.uploader.upload(path, { folder: 'images' })
+    .then((result) => {
+      res.json({
+        success: 1,
+        image_url: result.secure_url,
+      });
+    })
+    .catch((error) => {
+      console.error('Upload to Cloudinary failed:', error);
+      res.status(500).json({ success: 0, error: 'Failed to upload image' });
+    });
 });
 
 // Schema for Creating Products
